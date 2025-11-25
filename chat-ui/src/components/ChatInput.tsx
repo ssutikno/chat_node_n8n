@@ -1,9 +1,19 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useChatStore } from '../store/chatStore';
 import { sendMessageToN8n } from '../services/n8nApiService';
 
 const ChatInput = () => {
   const { input, setInput, addMessage, isLoading } = useChatStore();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (!isLoading) {
+      // Small timeout to ensure the DOM is ready and state updates have processed
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 10);
+    }
+  }, [isLoading]);
 
   const handleSendMessage = async () => {
     if (input.trim() === '' || isLoading) return;
@@ -33,6 +43,7 @@ const ChatInput = () => {
     <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
       <div className="relative">
         <textarea
+          ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}

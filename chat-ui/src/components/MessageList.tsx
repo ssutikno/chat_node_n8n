@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useChatStore, Message as MessageType } from '../store/chatStore';
 import Message from './Message';
 import LoadingIndicator from './LoadingIndicator';

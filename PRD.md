@@ -1,4 +1,4 @@
-# Product Requirements Document (PRD) - v1.1
+# Product Requirements Document (PRD) - v1.2
 ## Chat System App - n8n Chat Trigger Replacement
 
 ---
@@ -6,7 +6,7 @@
 ## 1. Executive Summary
 
 ### 1.1 Product Overview
-A standalone chat system application designed to replace the native n8n chat trigger, providing a ChatGPT-like user interface for seamless conversational interactions with n8n workflows. This version introduces server-side history and data visualization capabilities.
+A standalone chat system application designed to replace the native n8n chat trigger, providing a ChatGPT-like user interface for seamless conversational interactions with n8n workflows. This version introduces server-side history, data visualization capabilities, and streaming response support.
 
 ### 1.2 Product Vision
 Create an intuitive, modern chat interface that bridges end-users and n8n automation workflows, offering a familiar ChatGPT-style experience while maintaining full integration with n8n's powerful automation capabilities.
@@ -25,13 +25,14 @@ Create an intuitive, modern chat interface that bridges end-users and n8n automa
 - n8n's native chat trigger has limited UI customization and a dated interface.
 - Lack of secure, persistent chat history across sessions.
 - Inability to visualize data within the chat interface.
+- No support for real-time streaming of responses.
 
 ### 2.2 Solution
 A dedicated chat application with:
-- A modern, ChatGPT-inspired UI/UX.
+- A modern, ChatGPT-inspired UI/UX with a collapsible sidebar.
 - Secure, server-side chat history managed by n8n.
 - Support for rendering charts and graphs.
-- Full n8n workflow integration and customizable appearance.
+- Full n8n workflow integration with streaming support.
 
 ---
 
@@ -39,13 +40,13 @@ A dedicated chat application with:
 
 ### 3.1 Goals
 1. Provide a production-ready, secure alternative to the n8n chat trigger.
-2. Deliver a ChatGPT-like user experience with persistent history.
+2. Deliver a ChatGPT-like user experience with persistent history and streaming.
 3. Enable data visualization through charts within the conversation.
 4. Ensure seamless integration with n8n workflows.
 
 ### 3.2 Success Metrics
 - User adoption rate > 80% among target users.
-- Average response time < 2 seconds.
+- Average response time < 2 seconds (immediate for streaming).
 - User satisfaction score > 4.5/5.
 - Flawless history retrieval and message persistence.
 - 99.9% uptime SLA for the chat interface.
@@ -56,6 +57,8 @@ A dedicated chat application with:
 
 ### 4.1 User Interface
 - **Main Chat Area**: Displays messages, charts, and loading indicators.
+- **Sidebar**: Collapsible sidebar for navigation and history management.
+- **Sidebar Toggle**: Button to toggle sidebar visibility on desktop and mobile.
 - **Message Display**: Renders user and bot messages, Markdown content, and charts.
 - **Visual Design**: Includes a light/dark mode toggle and a responsive layout.
 - **Message Input**: A multi-line, auto-resizing text area for composing messages.
@@ -65,6 +68,7 @@ A dedicated chat application with:
 #### 4.2.1 Core Features
 - Send text messages to a primary n8n workflow.
 - Receive and display text, Markdown, and chart responses.
+- **Streaming Support**: Real-time display of bot responses as they are generated.
 - Load and display conversation history on startup.
 - Real-time feedback with typing indicators.
 
@@ -83,6 +87,7 @@ A dedicated chat application with:
     1.  A `POST` webhook for sending messages and receiving responses.
     2.  A `GET` webhook for retrieving chat history.
 - **Data Exchange**: The frontend sends a `sessionId` with every request. The n8n backend is responsible for all data storage operations.
+- **Response Handling**: Supports both JSON responses (for structured data/charts) and streaming text responses.
 
 ---
 
@@ -96,7 +101,7 @@ A dedicated chat application with:
 - **Styling**: Tailwind CSS
 - **State Management**: Zustand
 - **Charting**: ECharts
-- **HTTP Client**: Fetch API
+- **HTTP Client**: Fetch API (with ReadableStream support)
 
 #### 6.1.2 Backend (n8n)
 - **Workflows**: Two required n8n workflows (one for chat, one for history).
@@ -128,8 +133,10 @@ The architecture now relies on the n8n instance to act as the backend for busine
 4.  The chat UI displays the history.
 5.  User sends a new message.
 6.  Frontend sends the message and `sessionId` to the main n8n chat webhook.
-7.  The main n8n workflow processes the message, generates a response, and saves both the user message and bot response to the data store.
-8.  The workflow returns the bot's response to the UI.
+7.  The main n8n workflow processes the message.
+    *   **Standard**: Generates full response, saves to DB, returns JSON.
+    *   **Streaming**: Streams response chunks to UI, saves final message to DB (if configured).
+8.  The chat UI displays the response (incrementally if streaming).
 
 ---
 
@@ -165,16 +172,16 @@ The architecture now relies on the n8n instance to act as the backend for busine
 
 ### 9.3 Response from Main n8n Workflow
 
-Your main workflow must return a JSON object.
+Your main workflow must return a JSON object or a text stream.
 
-#### 9.3.1 Standard Text Response
+#### 9.3.1 Standard Text Response (JSON)
 ```json
 {
   "response": "This is a plain text response from the bot."
 }
 ```
 
-#### 9.3.2 Chart Response
+#### 9.3.2 Chart Response (JSON)
 ```json
 {
   "response": "Here is a chart of recent activity:",
@@ -185,6 +192,10 @@ Your main workflow must return a JSON object.
   }
 }
 ```
+
+#### 9.3.3 Streaming Response
+- **Content-Type**: `text/plain` or `text/event-stream`
+- **Body**: Raw text chunks sent sequentially.
 
 ---
 
@@ -213,6 +224,7 @@ VITE_N8N_GET_HISTORY_URL="https://your-n8n.instance.com/webhook/get-history"
 ### 16.3 Version History
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.2 | 2025-11-25 | AI Assistant | Added streaming response support and sidebar toggle functionality. |
 | 1.1 | 2025-11-25 | AI Assistant | Implemented server-side history and chart functionality. Updated architecture to a two-webhook system. |
 | 1.0 | 2025-11-25 | AI Assistant | Initial PRD creation. |
 

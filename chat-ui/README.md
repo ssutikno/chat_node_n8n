@@ -4,7 +4,8 @@ A standalone, ChatGPT-like chat application designed to provide a modern and int
 
 ## Features
 
-- **Modern UI/UX**: A clean, responsive design inspired by ChatGPT.
+- **Modern UI/UX**: A clean, responsive design inspired by ChatGPT with a collapsible sidebar.
+- **Streaming Responses**: Supports real-time text streaming from n8n for a faster, more interactive experience.
 - **Server-Side History**: Fetches chat history from your n8n backend for persistent, secure conversations.
 - **Light & Dark Mode**: Switch themes based on your preference.
 - **Markdown Rendering**: Renders bot responses formatted in Markdown.
@@ -148,6 +149,9 @@ Your workflow must return a JSON object.
   }
 }
 ```
+
+#### Streaming Response
+To enable streaming, your n8n workflow should return a raw text stream (Content-Type: `text/plain` or `text/event-stream`) instead of a JSON object. The chat UI will automatically detect this and display the response incrementally.
 
 ## Customization
 
